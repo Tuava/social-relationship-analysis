@@ -1,0 +1,59 @@
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.backup*
+frontend/.env
+
+# Dependencies and build output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+backend/bin/
+*.test
+
+# Runtime data and logs. The database and media objects stay outside Git.
+data/
+*.log
+logs/
+test_cache/
+
+# IDE and OS files
+.DS_Store
+.idea/
+.vscode/
+.claude/settings.local.json
+
+# Temporary files
+tmp/
+*.tmp
+/backend/server
+/backend/mcp-server
+/backend/mcp-server.bak.*
+/backend/backend/
+/backend/server.pid
+/frontend/frontend.pid
+/server
+/mcp-server
+
+# Local databases, exports and private investigation notes
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.dump
+*.sql.gz
+*.jsonl
+*.pid
+*.app/
+/.agents/
+/skills-lock.json
+/docs/mcp-readonly-analysis-*.md
+/release/
+/backend/backfill_text_window
+/backend/init_prompts
+__pycache__/
+*.py[cod]
+/docs/data-collection-known-issues.md

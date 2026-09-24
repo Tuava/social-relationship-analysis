@@ -1,0 +1,53 @@
+diff --git a/src/qzone/client.ts b/src/qzone/client.ts
+index 9d503fa..0cd45b0 100644
+--- a/src/qzone/client.ts
++++ b/src/qzone/client.ts
+@@ -1336,41 +1336,22 @@ export class QzoneClient {
+   }
+ 
+   /**
+-   * 保存 QR 码到文件。优先提取 img.src 直接下载（绕过截图字体渲染问题），
+-   * 失败则尝试元素截图，最后回退到整页截图。
++   * 保存登录页当前 QR 码。二维码与页面中的 qrsig 会话绑定，不能脱离
++   * Playwright 上下文再次请求 img.src，否则保存下来的二维码无法被当前页面确认。
+    */
+   private async _saveQrCode(page: any, absQrPath: string): Promise<void> {
+     const selectors = '#qrlogin_img, img[src*="ptqrshow"]';
+ 
+-    // 方案 1: 提取 QR 图片 src 直接下载（最可靠）
++    // 方案 1: 截取页面中已经加载的二维码，保留当前浏览器会话。
+     try {
+       const qrImg = page.locator(selectors).first();
+       await qrImg.waitFor({ state: 'visible', timeout: 15000 });
+-      const src: string = await qrImg.getAttribute('src', { timeout: 5000 });
+-      if (src && (src.startsWith('http') || src.startsWith('//'))) {
+-        const imgUrl = src.startsWith('//') ? `https:${src}` : src;
+-        const resp = await fetch(imgUrl, { signal: AbortSignal.timeout(10000) });
+-        if (resp.ok) {
+-          const buf = Buffer.from(await resp.arrayBuffer());
+-          fs.writeFileSync(absQrPath, buf);
+-          log('INFO', `QR 码已保存到: ${absQrPath}（直接下载）`);
+-          return;
+-        }
+-      }
+-    } catch { /* fall through */ }
+-
+-    // 方案 2: 元素截图
+-    try {
+-      const qrImg = page.locator(selectors).first();
+-      const isVisible = await qrImg.isVisible().catch(() => false);
+-      if (isVisible) {
+-        await qrImg.screenshot({ path: absQrPath, timeout: 10000 });
+-        log('INFO', `QR 码已保存到: ${absQrPath}（元素截图）`);
+-        return;
+-      }
++      await qrImg.screenshot({ path: absQrPath, timeout: 10000 });
++      log('INFO', `QR 码已保存到: ${absQrPath}（当前登录会话）`);
++      return;
+     } catch { /* fall through */ }
+ 
+-    // 方案 3: 整页截图
++    // 方案 2: 整页截图
+     try {
+       await page.screenshot({ path: absQrPath, timeout: 15000 });
+       log('INFO', `QR 码截图已保存到: ${absQrPath}（整页截图）`);
